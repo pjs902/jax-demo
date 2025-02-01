@@ -1,7 +1,6 @@
-# A quick tour of JAX.
+# A quick tour of JAX
 
 This is a short demo of JAX that I put together for a group meeting.
-
 
 ```python
 import numpy as np
@@ -29,6 +28,7 @@ jax.config.update("jax_enable_x64", True)
 `X` - XLA
 
 Jax gives you three main things:
+
 1. `JIT` - Just In Time compilation:
     - Speeds up your code
 2. `Autograd` - Automatic differentiation:
@@ -36,11 +36,7 @@ Jax gives you three main things:
 3. `XLA` - Accelerated Linear Algebra:
     - Compiles and runs code on CPU, GPUs or TPUs.
 
-
 These things are all possible with languages like Julia or subsets of C++, but JAX is fully integrated with Python and provides an _almost_ drop-in replacement for numpy.
-
-
-
 
 Disclaimer 1: I'm not going to talk about GPU stuff here, if you have big problems _and_ access to GPUs, you should look into it, expect orders of magnitude speedups just by switching from CPU to GPU with essentially no code changes
 
@@ -53,7 +49,6 @@ Just In Time means that code is compiled as it is run. This can speed up your co
 Here is an example of how you can use JIT to speed up a simple function:
 
 Functions need to be implemented in JAX in order to be JIT compiled. This means that you need to use JAX's version of numpy functions, which are typically import as `jnp` (jax.numpy).
-
 
 ```python
 # define some arbitrary function
@@ -122,9 +117,7 @@ print("jax jitted:")
 
     6.571428571428571
 
-
-
-Anything that is implemented in `numpy` can probably be implemented in JAX, though more comples functions may require more work. 
+Anything that is implemented in `numpy` can probably be implemented in JAX, though more comples functions may require more work.
 
 If you are doing a lot of "math stuff" in your code, you will probably be able to use JAX without too much trouble.
 
@@ -133,7 +126,6 @@ If you are doing a lot of "math stuff" in your code, you will probably be able t
 JAX needs to be able to trace the code you want to JIT compile. This means that the behavior of your
 code can't change depending on the input. Using IF statements or certain kinds of loops in your functions with cause problems
 with JIT!
-
 
 ```python
 def function_with_if(x):
@@ -149,8 +141,6 @@ print(function_with_if(-5))
     -5
     -5
 
-
-
 ```python
 # try to JIT this function
 
@@ -158,7 +148,6 @@ jax.jit(function_with_if)(5)
 
 # fails with a big ugly error message
 ```
-
 
     ---------------------------------------------------------------------------
 
@@ -192,8 +181,6 @@ jax.jit(function_with_if)(5)
     The error occurred while tracing the function function_with_if at /var/folders/ky/t4214cvn41x2pt7m57v3mlfrbv8h84/T/ipykernel_44342/1602498362.py:1 for jit. This concrete value was not available in Python because it depends on the value of the argument x.
     See https://jax.readthedocs.io/en/latest/errors.html#jax.errors.TracerBoolConversionError
 
-
-
 ```python
 # can rewrite the same function to be more jax-friendly
 
@@ -208,12 +195,9 @@ print(jax.jit(function_with_if_jax)(-5))
     -5
     -5
 
-
 This was a simple example of how to work around the restriction of control flow in JAX. There are more advanced ways to do this when you have a more complex function.
 
 One common pattern is to specify "static arguments". Telling JAX that an argument is static means that the function will be recompiled if that argument changes.
-
-
 
 ```python
 # static_argnums example
@@ -231,8 +215,6 @@ print(add_loop(5, 10))
 
     15
 
-
-
 ```python
 # try to JIT this function
 
@@ -240,7 +222,6 @@ jax.jit(add_loop)(5, 10)
 
 # fails with a big ugly error message, because the behavior of the function depends on the value of the second argument
 ```
-
 
     ---------------------------------------------------------------------------
 
@@ -275,8 +256,6 @@ jax.jit(add_loop)(5, 10)
     The error occurred while tracing the function add_loop at /var/folders/ky/t4214cvn41x2pt7m57v3mlfrbv8h84/T/ipykernel_44342/703288431.py:4 for jit. This concrete value was not available in Python because it depends on the value of the argument increments.
     See https://jax.readthedocs.io/en/latest/errors.html#jax.errors.TracerIntegerConversionError
 
-
-
 ```python
 # try to JIT it again, this time specifying that the second argument is static
 
@@ -288,7 +267,6 @@ print(jax.jit(add_loop, static_argnums=(1))(5, 100))
 
     15
     105
-
 
 This sort of pattern is also extremely common for Class methods. In these cases you want to JAX that the `self` argument is static, so that the function is recompiled for each instance of the class.
 
@@ -325,8 +303,6 @@ f(3, 2) # this is JIT'd and specifies that the second argument is static
 
 JAX also provides a way to automatically vectorize functions. This can be useful for executing the same function on many different inputs _in parallel_. VMAP is subject to most of the same restrictions as JIT, but can get you similar speedups.
 
-
-
 ```python
 # Let's create a function that calculates multiple statistical properties at once
 def compute_stats(x):
@@ -356,7 +332,6 @@ vectorized_stats = jax.vmap(compute_stats)
     With vmap:
     188 μs ± 423 ns per loop (mean ± std. dev. of 7 runs, 10,000 loops each)
 
-
 This is a bit of a contrived example, because you could have specified the indices in the original function and evaluated everything at the same time. This kind of manual broadcasting/indexing can be a bit error-prone and hard to read, so VMAP can be a useful tool for this kind of thing. The main use case for VMAP is when you have a function that you want to evaluate on many different inputs at the same time. This situaton comes up more often that you might think. Evaluating a pdf on a large multidimensional grid might be a good example of this.
 
 # Autograd
@@ -366,7 +341,6 @@ Autograd is a way to automatically compute gradients of your code. This is usefu
 Autograd is not symbolic differentiation. It is a repeated application of the chain rule. Despite not being symbolic, it will still calculate gradients that are correct to machine precision because the analytic derivatives of the base functions are known.
 
 Here is an example of how to use autograd to compute the gradient of a simple function:
-
 
 ```python
 def function_to_diff(x):
@@ -397,9 +371,6 @@ plt.ylabel("y")
 plt.legend()
 ```
 
-
-
-
     <matplotlib.legend.Legend at 0x111ae5310>
 
 
@@ -407,11 +378,8 @@ plt.legend()
 
     
 ![png](jax_intro_files/jax_intro_19_1.png)
-    
-
 
 This was a pretty simple example but it also translates to more complex functions.
-
 
 ```python
 def difficult_function(x, y):
@@ -440,9 +408,6 @@ plt.ylabel("z")
 plt.legend()
 ```
 
-
-
-
     <matplotlib.legend.Legend at 0x3415f2060>
 
 
@@ -450,8 +415,6 @@ plt.legend()
 
     
 ![png](jax_intro_files/jax_intro_21_1.png)
-    
-
 
 Notice in the above example that we didn't have any problems with control flow. Computing gradients with JAX is much more flexible than JIT compiling code.
 
@@ -462,7 +425,6 @@ This has all been a bit contrived, let set up an example that is a bit more real
 ## A quick look at how gradients help optimization
 
 First it's worth quickly looking at why gradients are useful for optimization-style problems. In the figure below, I've created a toy likelihood function for easy visualization. This likelihood is symmetric, but also sharpely peaked. I've drawn four different points on this likelihood and we can look at each of them to see how the gradient can help us find the minimum. At the leftmost point, the gradient is positive, but small, so the optimal step would be a large positive step. At the second point, the gradient is still positive, but larger, so the optimal step would be a small positive step. At the third point, we now have a large negative gradient, so the optimal step would be a small negative step. At the rightmost point, the gradient is negative, but small, so the optimal step would be a large negative step. This is the basic idea behind gradient descent. The sign of the gradient tells you which way to go, and the magnitude of the gradient tells you how far to go.
-
 
 ```python
 # draw a laurentian profile as an example likelihood function
@@ -484,9 +446,6 @@ plt.scatter([-5, -1, 1, 5], lorentzian(np.array([-5, -1, 1, 5]), 0, 1), color="r
 
 ```
 
-
-
-
     <matplotlib.collections.PathCollection at 0x111637470>
 
 
@@ -494,16 +453,12 @@ plt.scatter([-5, -1, 1, 5], lorentzian(np.array([-5, -1, 1, 5]), 0, 1), color="r
 
     
 ![png](jax_intro_files/jax_intro_27_1.png)
-    
-
-
 
 ```python
 
 ```
 
 ## Now apply this to a real optimization problem
-
 
 ```python
 # set up the problem
@@ -532,9 +487,6 @@ plt.xlabel("x")
 plt.ylabel("y")
 ```
 
-
-
-
     Text(0, 0.5, 'y')
 
 
@@ -542,9 +494,6 @@ plt.ylabel("y")
 
     
 ![png](jax_intro_files/jax_intro_30_1.png)
-    
-
-
 
 ```python
 # set up the loss function
@@ -585,9 +534,6 @@ print(f"Number of function evaluations: {result.nfev}")
 
     
 ![png](jax_intro_files/jax_intro_31_1.png)
-    
-
-
 
 ```python
 # benchmark the plain nll vs a jitted version
@@ -607,12 +553,9 @@ print("nll JIT:")
     nll JIT:
     10.7 ms ± 180 μs per loop (mean ± std. dev. of 7 runs, 100 loops each)
 
-
-
 ```python
 # the same factor of a few speedup as before
 ```
-
 
 ```python
 # now we try the same thing, but we include the gradient
@@ -638,11 +581,9 @@ print(f"Number of gradient evaluations: {result.njev}")
     Number of function evaluations: 70
     Number of gradient evaluations: 58
 
-
 By using the gradient of the loss function, we arrive at the same answer but with many fewer function evaluations.
 
 This can really add up if your model is slow to evaluate, or if this optimization step happens as a part of a larger iterative process.
-
 
 ```python
 # benchmark the plain nll vs a gradient version
@@ -664,7 +605,6 @@ print("nll Gradient:")
     nll Gradient:
     10.5 ms ± 165 μs per loop (mean ± std. dev. of 7 runs, 100 loops each)
 
-
 Not much of a speed up here, but our model is trivially simple. The speedup can be much more significant for more complex models where function evaluations are more expensive.
 
 # Another practical example: fitting a velocity dispersion with MCMC
@@ -673,12 +613,10 @@ MCMC requires a ton of likelihood evaluations. If we can speed up the likelihood
 
 Here we will just just `emcee` but because we have gradients, we could use something much fancier! I like to use `blackjax` for this sort of thing which implements HMC and NUTS samplers along with automated tuning of the sampler parameters.
 
-
 ```python
 import scipy
 from astropy.stats import knuth_bin_width
 ```
-
 
 ```python
 # set up the data for this example
@@ -707,9 +645,6 @@ plt.plot(
 )
 ```
 
-
-
-
     [<matplotlib.lines.Line2D at 0x1139503e0>]
 
 
@@ -717,9 +652,6 @@ plt.plot(
 
     
 ![png](jax_intro_files/jax_intro_41_1.png)
-    
-
-
 
 ```python
 # goal for this example is to fit a Gaussian to the data, accounting for the errors
@@ -752,7 +684,6 @@ def log_posterior(params, vels, dvels):
 
 ```
 
-
 ```python
 # now set up emcee
 import emcee
@@ -767,8 +698,6 @@ _ = sampler.run_mcmc(pos0, 1000, progress=True)
 
     100%|██████████| 1000/1000 [00:37<00:00, 26.32it/s]
 
-
-
 ```python
 # plot the chains
 flat_chain = sampler.get_chain(flat=True, discard=500)
@@ -778,18 +707,12 @@ from corner import corner
 _ = corner(flat_chain, labels=["Mean", "Std", "Scatter"], show_titles=True)
 ```
 
-
-    
 ![png](jax_intro_files/jax_intro_44_0.png)
-    
-
-
 
 ```python
 # this took ~40 seconds to run, not bad but again, would be nice to speed up if this was part of a
 # larger pipeline, or if you had to run it many times
 ```
-
 
 ```python
 # let's try to JIT the log_likelihood function
@@ -804,19 +727,13 @@ _ = sampler.run_mcmc(pos0, 1000, progress=True)
 
     100%|██████████| 1000/1000 [00:02<00:00, 453.85it/s]
 
-
-
 ```python
 flat_chain = sampler.get_chain(flat=True, discard=500)
 
 _ = corner(flat_chain, labels=["Mean", "Std", "Scatter"], show_titles=True)
 ```
 
-
-    
 ![png](jax_intro_files/jax_intro_47_0.png)
-    
-
 
 In both cases, we get the same (correct) answer, but with the JIT'd version we get a factor of 20 speedup.
 
@@ -834,13 +751,11 @@ Some things that I've hidden in these examples:
 
 - JAX can only compute gradients of functions defined in JAX. If you have legacy code that you want to use that calls C or Fortran functions, you cannot use JAX to compute gradients of that code. If you can (somehow?) compute the derivative of this function then you can still integrate this function into your JAX code, but you will have to provide the derivative yourself, and this is not a common occurrence.
 
-
 ```python
 arr = jnp.array([1, 2, 3, 4, 5])
 
 arr[3] = 10
 ```
-
 
     ---------------------------------------------------------------------------
 
@@ -861,45 +776,25 @@ arr[3] = 10
 
     TypeError: JAX arrays are immutable and do not support in-place item assignment. Instead of x[idx] = y, use x = x.at[idx].set(y) or another .at[] method: https://jax.readthedocs.io/en/latest/_autosummary/jax.numpy.ndarray.at.html
 
-
-
 ```python
 arr.at[3].set(10)
 
 ```
 
-
-
-
     Array([ 1,  2,  3, 10,  5], dtype=int64)
-
-
-
 
 ```python
 arr
 ```
 
-
-
-
     Array([1, 2, 3, 4, 5], dtype=int64)
-
-
-
 
 ```python
 arr = arr.at[3].set(10)
 arr
 ```
 
-
-
-
     Array([ 1,  2,  3, 10,  5], dtype=int64)
-
-
-
 
 ```python
 # some other .at methods
@@ -914,10 +809,9 @@ print(arr.at[3].min(3))
     [ 1  2  3 10  5]
     [1 2 3 3 5]
 
-
 Aren't these copies slower than in-place updates? Yes, they are, but when you JIT a function, these actually get compiled into fast in-place updates. This takes a bit of getting used to, but is typically not a problem in practice.
 
-# Some useful links:
+# Some useful links
 
 ## JAX documentation
 
@@ -943,7 +837,7 @@ Aren't these copies slower than in-place updates? Yes, they are, but when you JI
 
 - [bayeux](https://jax-ml.github.io/bayeux/): General purpose Bayesian inference in JAX. Provide a JAX-compatible log likelihood function and apply your choice of inference methods, common interface to a variety of MCMC methods, optimizers and variational inference.
 
-- [equinox](https://docs.kidger.site/equinox/): Neural Networks in JAX. Fast, simple, and flexible. Also provides a ton of useful utilities for building and debugging more complicated non-neural network models in JAX. 
+- [equinox](https://docs.kidger.site/equinox/): Neural Networks in JAX. Fast, simple, and flexible. Also provides a ton of useful utilities for building and debugging more complicated non-neural network models in JAX.
 
 - [jaxtyping](https://github.com/patrick-kidger/jaxtyping): Library for type _and array shape_ checking in JAX.
 
@@ -954,5 +848,3 @@ Aren't these copies slower than in-place updates? Yes, they are, but when you JI
 - [coordinax](https://github.com/GalacticDynamics/coordinax/): Astropy coordinates in JAX.
 
 - [unxt](https://github.com/GalacticDynamics/unxt/): Astropy units in JAX.
-
-
