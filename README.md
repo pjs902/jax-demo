@@ -1,3 +1,8 @@
+# A quick tour of JAX.
+
+This is a short demo of JAX that I put together for a group meeting.
+
+
 ```python
 import numpy as np
 import matplotlib.pyplot as plt
